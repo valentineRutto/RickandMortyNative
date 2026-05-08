@@ -22,7 +22,7 @@ class MyApplication : Application() {
 
             androidLogger( level = Level.DEBUG)
             androidContext(this@MyApplication)
-            modules(networkingModule, databaseModule, appModule)
+            modules(networkingModule, appModule)
 
         }}}
 
