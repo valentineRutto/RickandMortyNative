@@ -1,12 +1,16 @@
 package com.valentinerutto.rickandmortynative.data.network
 
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 
 object RetrofitClient {
-    const val ESV_BASE_URL = "https://api.esv.org/"
-    const val GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/"
 
-    const val HUGGING_FACE_BASE_URL = "https://api-inference.huggingface.co/"
+    const val BASE_URL = " https://rickandmortyapi.com/api"
 
     fun provideRetrofit(baseUrl: String, okHttpClient: OkHttpClient): Retrofit {
 
@@ -30,25 +34,8 @@ object RetrofitClient {
         }
     }
 
-    fun provideEsvOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                chain.proceed(
-                    chain.request().newBuilder()
-                        .addHeader(
-                            "Authorization",
-                            "Token ${BuildConfig.ESV_API_KEY}"
-                        )
-                        .build()
-                )
-            }
-            .addInterceptor(createLoggingInterceptor())
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
 
-    fun provideAIOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(createLoggingInterceptor())
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -56,23 +43,6 @@ object RetrofitClient {
             .build()
     }
 
-    fun provideHGAIOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(createLoggingInterceptor())
-            .addInterceptor { chain ->
-                chain.proceed(
-                    chain.request().newBuilder()
-                        .addHeader(
-                            "Authorization",
-                            "Token ${BuildConfig.HF_API_KEY}"
-                        )
-                        .build()
-                )
-            }
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
 
 
 }

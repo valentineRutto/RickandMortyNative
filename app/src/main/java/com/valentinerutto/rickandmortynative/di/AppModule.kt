@@ -1,4 +1,4 @@
 package com.valentinerutto.rickandmortynative.di
 
-fun appModule = module {
-}
+//fun appModule = module {
+//}
