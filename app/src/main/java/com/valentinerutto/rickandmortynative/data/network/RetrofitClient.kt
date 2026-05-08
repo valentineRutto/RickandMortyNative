@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    const val BASE_URL = " https://rickandmortyapi.com/api"
+    const val BASE_URL = " https://rickandmortyapi.com/api/"
 
     fun provideRetrofit(baseUrl: String, okHttpClient: OkHttpClient): Retrofit {
 
