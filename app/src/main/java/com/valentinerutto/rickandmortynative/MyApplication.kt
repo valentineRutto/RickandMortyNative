@@ -2,6 +2,7 @@ package com.valentinerutto.rickandmortynative
 
 import android.app.Application
 import com.valentinerutto.rickandmortynative.di.appModule
+import com.valentinerutto.rickandmortynative.di.databaseModule
 import com.valentinerutto.rickandmortynative.di.networkingModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -22,8 +23,10 @@ class MyApplication : Application() {
 
             androidLogger( level = Level.DEBUG)
             androidContext(this@MyApplication)
-            modules(networkingModule, appModule)
+            modules(networkingModule, databaseModule, appModule)
 
-        }}}
+        }
+    }
+}
 
 
