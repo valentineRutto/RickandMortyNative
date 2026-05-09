@@ -6,9 +6,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,7 +30,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,11 +43,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.valentinerutto.rickandmortynative.CharacterViewmodel
+import com.valentinerutto.rickandmortynative.UiState
 import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
+import com.valentinerutto.rickandmortynative.ui.theme.PortalBackground
 import com.valentinerutto.rickandmortynative.ui.theme.PortalBorder
 import com.valentinerutto.rickandmortynative.ui.theme.PortalDanger
 import com.valentinerutto.rickandmortynative.ui.theme.PortalGreen
@@ -56,48 +67,126 @@ import retrofit2.HttpException
         viewModel: CharacterViewmodel
     ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-        LazyColumn {
-            items(characters.itemCount) { index ->
-                val character = characters[index]
-                if (character != null) {
-                    CharacterCard(character)
+
+    CharacterContent(
+        state = state,
+        characters = characters,
+        onQueryChange = viewModel::onQueryChange,
+        onStatusSelected = viewModel::onStatusSelected,
+        onSpeciesSelected = viewModel::onSpeciesSelected,
+        onItemClick = {}
+    )
+
+    }
+@Composable
+private fun CharacterContent(
+    state: UiState,
+    characters: LazyPagingItems<CharacterEntity>,
+    onQueryChange: (String) -> Unit,
+    onStatusSelected: (String?) -> Unit,
+    onSpeciesSelected: (String?) -> Unit,
+    onItemClick: (CharacterEntity) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PortalBackground)
+            .padding(horizontal = 16.dp)
+    ) {
+        TopBar()
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        SearchField(
+            value = state.query,
+            onValueChange = onQueryChange
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+        FilterRow(
+            label = "STATUS",
+            options = listOf("Alive", "Dead", "Unknown"),
+            selected = state.selectedStatus,
+            onSelected = onStatusSelected
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+       FilterRow(
+            label = "SPECIES",
+            options = listOf("Human", "Alien", "Mythological Creature"),
+            selected = state.selectedSpecies,
+            onSelected = onSpeciesSelected
+        )
+        Spacer(modifier = Modifier.height(22.dp))
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                contentPadding = PaddingValues(bottom = 28.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(
+                    count = characters.itemCount,
+                    key = { index -> characters[index]?.id ?: "character-placeholder-$index" }
+                ) { index ->
+                    val character = characters[index]
+                    if (character != null) {
+
+                        CharacterCard(
+                            character = character,
+                            onItemClick = { onItemClick(character) }
+                        )
+                    }
+                }
+
+                if (characters.loadState.append is LoadState.Loading) {
+                    item(key = "next-page-loading") {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = PortalGreen,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
                 }
             }
 
-            characters.apply {
-                when {
-                    loadState.refresh is LoadState.Loading -> {
-                        item { CircularProgressIndicator() }
-                    }
+            if (characters.loadState.refresh is LoadState.Loading) {
+                CircularProgressIndicator(
+                    color = PortalGreen,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 12.dp)
+                        .size(24.dp)
+                )
+            }
 
-                    loadState.append is LoadState.Loading -> {
-                        item { CircularProgressIndicator() }
-                    }
-
-                    loadState.refresh is LoadState.Error -> {
-                        val error = loadState.refresh as LoadState.Error
-                        item {
-                            Text(text = error.error.message ?: "Something went wrong")
-                        }
-                    }
-
-                    loadState.append is LoadState.Error -> {
-                        val error = loadState.append as LoadState.Error
-                        item {
-                            Text(text = error.error.message ?: "Could not load more")
-                        }
-                    }
-                }
+            val refreshState = characters.loadState.refresh
+            if (refreshState !is LoadState.Loading && characters.itemCount == 0) {
+                EmptyState(
+                    message = refreshState.errorMessage()
+                        ?: "No characters found in this dimension.",
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
             }
         }
     }
-
+}
 @Composable
 private fun CharacterCard(
-    character: CharacterEntity
+    character: CharacterEntity,
+    onItemClick: () -> Unit = {}
 ) {
     Card(
+        onClick = onItemClick,
         colors = CardDefaults.cardColors(containerColor = PortalSurface),
         border = BorderStroke(1.dp, PortalBorder),
         shape = RoundedCornerShape(8.dp),
@@ -228,6 +317,36 @@ private fun StatusBadge(status: String, modifier: Modifier = Modifier) {
         )
     }
 }
+@Composable
+private fun SearchField(value: String, onValueChange: (String) -> Unit) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = {
+            Text(
+                text = "Search by name...",
+                color = PortalMuted
+            )
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(4.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = PortalSurface,
+            unfocusedContainerColor = PortalSurface,
+            focusedTextColor = PortalText,
+            unfocusedTextColor = PortalText,
+            cursorColor = PortalGreen,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, PortalBorder.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+    )
+}
+
+
+
 @Composable
 private fun FilterRow(
     label: String,

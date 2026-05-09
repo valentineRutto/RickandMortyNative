@@ -10,13 +10,20 @@ import com.valentinerutto.rickandmortynative.data.local.CharacterRemoteKey
 import com.valentinerutto.rickandmortynative.data.local.RickandMortyDatabase
 import com.valentinerutto.rickandmortynative.data.local.toEntity
 import com.valentinerutto.rickandmortynative.data.network.ApiService
+import kotlin.text.isNotBlank
 
 @OptIn(ExperimentalPagingApi::class)
-class CharacterRemoteMediator(private val api: ApiService, private val database: RickandMortyDatabase) : RemoteMediator<Int, CharacterEntity>() {
+class CharacterRemoteMediator(
+    private val query: String,
+    private val status: String?,
+    private val species: String?,
+    private val api: ApiService,
+    private val database: RickandMortyDatabase) : RemoteMediator<Int, CharacterEntity>() {
 
    private val characterDao = database.characterDao()
   private  val remoteKeyDao = database.remoteKeyDao()
 
+    private val filterKey = buildFilterKey(query, status, species)
 
     override suspend fun load(
         loadType: LoadType,
@@ -40,7 +47,7 @@ class CharacterRemoteMediator(private val api: ApiService, private val database:
                 }
             }
 
-            val response = api.getCharacters(page).body()
+            val response = api.getCharacters(page, name=query.takeIf { it.isNotBlank() },status=status, species=species).body()
             val characters = response?.results
             val endReached = response?.info?.next == null
 
@@ -57,6 +64,7 @@ class CharacterRemoteMediator(private val api: ApiService, private val database:
                 val keys = characters?.map {
                     CharacterRemoteKey(
                         characterId = it.id,
+                       // filterKey = filterKey,
                         prevKey = prevKey,
                         nextKey = nextKey
                     )
@@ -73,5 +81,17 @@ class CharacterRemoteMediator(private val api: ApiService, private val database:
             MediatorResult.Error(e)
         }
 
+    }
+
+    private companion object {
+        const val FIRST_PAGE = 1
+
+        fun buildFilterKey(query: String, status: String?, species: String?): String {
+            return listOf(
+                query.trim().lowercase(),
+                status.orEmpty().lowercase(),
+                species.orEmpty().lowercase()
+            ).joinToString(separator = "|")
+        }
     }
 }

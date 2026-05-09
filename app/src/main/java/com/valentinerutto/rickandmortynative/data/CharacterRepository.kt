@@ -11,6 +11,8 @@ import com.valentinerutto.rickandmortynative.data.local.toEntity
 import com.valentinerutto.rickandmortynative.data.network.ApiService
 import com.valentinerutto.rickandmortynative.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 
 class CharacterRepository  (  private val api: ApiService,
 private val dao: CharacterDao, private val database: RickandMortyDatabase
@@ -31,14 +33,57 @@ private val dao: CharacterDao, private val database: RickandMortyDatabase
     }
 
     @OptIn(ExperimentalPagingApi::class)
-    fun getPagedCharacters(): Flow<PagingData<CharacterEntity>>{
-        return Pager(
-            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
-            remoteMediator = CharacterRemoteMediator(api,database),
+   suspend fun getPagedCharacters(      query: String?=null,
+                                 status: String?=null,
+                                 species: String?=null): Flow<PagingData<CharacterEntity>>{
 
-            pagingSourceFactory = {database.characterDao().pagingSource()}
+    return flow {
 
-        ).flow
+        val localCount = dao.matchingCharacterCount(
+            name = query?.trim() ?: "",
+            status = status?: "",
+            species = species?: ""
+        )
+
+        val pager = if (localCount > 0) {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 20,
+                    enablePlaceholders = false
+                ),
+                pagingSourceFactory = {
+                    dao.searchCharacters(
+                        name = query?: "",
+                        status = status,
+                        species = species?: ""
+                    )
+                }
+            )
+        } else {
+            Pager(
+                config = PagingConfig(
+                    pageSize = 20,
+                    enablePlaceholders = false
+                ),
+                remoteMediator = CharacterRemoteMediator(
+                    api = api,
+                    database = database,
+                    query = query?: "",
+                    status = status,
+                    species = species
+                ),
+                pagingSourceFactory = {
+                    dao.searchCharacters(
+                        name = query?: "",
+                        status = status,
+                        species = species?: ""
+                    )
+                }
+            )
+        }
+
+        emitAll(pager.flow)
     }
+}
 
 }
