@@ -28,7 +28,7 @@ val appModule = module {
     }
 
     viewModel {
-        CharacterViewmodel(repository = get())
+        CharacterViewmodel(get(),repository = get())
     }
 }
 

@@ -10,4 +10,6 @@ data class Character(
     val origin: String,
     val location: String,
     val image: String,
+    val episode: String = ""
+
 )

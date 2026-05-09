@@ -15,7 +15,8 @@ data class CharacterEntity(
     val gender: String,
     val origin: String,
     val location: String,
-    val image: String
+    val image: String,
+    val episodeUrls: String=""
 )
 
 fun Result.toEntity(): CharacterEntity {
@@ -27,7 +28,9 @@ fun Result.toEntity(): CharacterEntity {
         gender = gender,
         origin = origin.name,
         location = location.name,
-        image = image
+        image = image,
+        episodeUrls = episode.toString()
+
     )
 
 }

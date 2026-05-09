@@ -50,4 +50,7 @@ private val dao: CharacterDao, private val database: RickandMortyDatabase
         ).flow
    }
 
+    fun observeCharacter(characterId: Int): Flow<CharacterEntity?> {
+        return dao.observeCharacter(characterId)
+    }
 }

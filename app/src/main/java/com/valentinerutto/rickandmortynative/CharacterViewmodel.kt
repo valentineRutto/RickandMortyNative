@@ -21,7 +21,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CharacterViewmodel( private val repository: CharacterRepository
+class CharacterViewmodel(  private val characterId: Int,
+                              private val repository: CharacterRepository
 ) : ViewModel() {
 
     private val filters = MutableStateFlow(FilterState())

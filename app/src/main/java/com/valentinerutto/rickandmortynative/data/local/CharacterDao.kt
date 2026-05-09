@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CharacterDao {
@@ -34,6 +35,9 @@ interface CharacterDao {
 
     @Query("DELETE FROM characters")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM characters WHERE id = :id")
+    fun observeCharacter(id: Int): Flow<CharacterEntity?>
 
 
     @Query("""
