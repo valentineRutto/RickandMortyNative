@@ -50,6 +50,7 @@ import coil.compose.AsyncImage
 import com.valentinerutto.rickandmortynative.CharacterDetailUiState
 import com.valentinerutto.rickandmortynative.CharacterViewmodel
 import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
+import com.valentinerutto.rickandmortynative.data.network.models.Episode
 import com.valentinerutto.rickandmortynative.ui.theme.PortalBackground
 import com.valentinerutto.rickandmortynative.ui.theme.PortalBorder
 import com.valentinerutto.rickandmortynative.ui.theme.PortalGreen
@@ -73,7 +74,10 @@ fun CharacterDetailScreen(
 
     CharacterDetailContent(
         character = state.character,
-        episodeUrls = state.episodeUrls,
+        episodeIds = state.episodeIds,
+        episodes = state.episodes,
+        isLoadingEpisodes = state.isLoadingEpisodes,
+        episodeError = state.episodeError,
         onBackClick = onBackClick
     )
 }
@@ -81,7 +85,10 @@ fun CharacterDetailScreen(
 @Composable
 private fun CharacterDetailContent(
     character: CharacterEntity?,
-    episodeUrls: List<String>,
+    episodeIds: List<Int>,
+    episodes: List<Episode>,
+    isLoadingEpisodes: Boolean,
+    episodeError: String?,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -158,22 +165,12 @@ private fun CharacterDetailContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (episodeUrls.isEmpty()) {
-            Text(
-                text = "No episode logs cached for this subject.",
-                color = PortalMuted,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
-            )
-        } else {
-            episodeUrls.forEachIndexed { index, episodeUrl ->
-                EpisodeRow(
-                    number = index + 1,
-                    episodeUrl = episodeUrl,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-                )
-            }
-        }
+        EpisodeSection(
+            episodeIds = episodeIds,
+            episodes = episodes,
+            isLoadingEpisodes = isLoadingEpisodes,
+            episodeError = episodeError
+        )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(18.dp),
@@ -224,13 +221,7 @@ private fun DetailTopBar(onBackClick: () -> Unit) {
             modifier = Modifier.weight(1f),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
-        IconButton(onClick = {}) {
-            Icon(
-                imageVector = Icons.Default.Share,
-                contentDescription = "Share",
-                tint = PortalGreen
-            )
-        }
+
     }
 }
 
@@ -355,13 +346,60 @@ private fun IconField(
         )
     }
 }
-
 @Composable
-private fun EpisodeRow(number: Int, episodeUrl: String, modifier: Modifier = Modifier) {
-    val episodeId = episodeUrl.substringAfterLast('/').toIntOrNull()
-    val episodeLabel = episodeId?.let { "Episode $it" } ?: "Episode Log"
-    val episodeCode = episodeId?.let { "EP${it.toString().padStart(3, '0')}" } ?: "LOG"
+private fun EpisodeSection(
+    episodeIds: List<Int>,
+    episodes: List<Episode>,
+    isLoadingEpisodes: Boolean,
+    episodeError: String?
+) {
+    when {
+        episodeIds.isEmpty() -> {
+            Text(
+                text = "No episode logs cached for this subject.",
+                color = PortalMuted,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+            )
+        }
 
+        isLoadingEpisodes -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = PortalGreen,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        episodeError != null -> {
+            Text(
+                text = episodeError,
+                color = PortalMuted,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+            )
+        }
+
+        else -> {
+            episodes.forEachIndexed { index, episode ->
+                EpisodeRow(
+                    number = index + 1,
+                    episode = episode,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                )
+            }
+        }
+    }
+}
+@Composable
+private fun EpisodeRow(number: Int, episode: Episode, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -387,7 +425,7 @@ private fun EpisodeRow(number: Int, episodeUrl: String, modifier: Modifier = Mod
         Spacer(modifier = Modifier.width(18.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = episodeLabel,
+                text = episode.name,
                 color = PortalText,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -395,15 +433,13 @@ private fun EpisodeRow(number: Int, episodeUrl: String, modifier: Modifier = Mod
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = episodeUrl,
+                text = episode.airDate,
                 color = PortalMuted,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                style = MaterialTheme.typography.bodyMedium
             )
         }
         Text(
-            text = episodeCode,
+            text = episode.episode,
             color = PortalGreen,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold

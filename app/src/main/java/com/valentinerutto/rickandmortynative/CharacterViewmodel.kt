@@ -7,7 +7,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.valentinerutto.rickandmortynative.data.CharacterRepository
 import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
+import com.valentinerutto.rickandmortynative.data.network.models.Episode
 import com.valentinerutto.rickandmortynative.util.Resource
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,12 +18,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class CharacterViewmodel(  private val characterId: Int,
+class CharacterViewmodel(
                               private val repository: CharacterRepository
 ) : ViewModel() {
 
@@ -66,22 +69,54 @@ class CharacterViewmodel(  private val characterId: Int,
         filters.update { it.copy(species = species) }
     }
 
-
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun characterDetailState(characterId: Int): Flow<CharacterDetailUiState> {
-        return repository.observeCharacter(characterId).map { character ->
-            CharacterDetailUiState(
-                character = character,
-                episodeUrls = character?.episodeUrls
-                    ?.split(",")
-                    ?.filter { it.isNotBlank() }
-                    ?.take(3)
-                    .orEmpty()
-            )
+
+        return repository.observeCharacter(characterId).flatMapLatest { character ->
+            flow {
+                val episodeIds = character.firstEpisodeIds()
+                emit(
+                    CharacterDetailUiState(
+                        character = character,
+                        episodeIds = episodeIds,
+                        isLoadingEpisodes = episodeIds.isNotEmpty()
+                    )
+                )
+
+                if (episodeIds.isEmpty()) return@flow
+
+                runCatching {
+                    repository.getEpisodes(episodeIds)
+                }.onSuccess { episodes ->
+                    emit(
+                        CharacterDetailUiState(
+                            character = character,
+                            episodeIds = episodeIds,
+                            episodes = episodes
+                        )
+                    )
+                }.onFailure {
+                    emit(
+                        CharacterDetailUiState(
+                            character = character,
+                            episodeIds = episodeIds,
+                            episodeError = "Could not load episode details."
+                        )
+                    )
+                }
+            }
         }
-    }
 
     }
 
+
+private fun CharacterEntity?.firstEpisodeIds(): List<Int> {
+    return this?.episodeUrls
+        ?.split(",")
+        ?.mapNotNull { it.substringAfterLast('/').toIntOrNull() }
+        ?.take(3)
+        .orEmpty()
+}}
 private data class FilterState(
     val query: String = "",
     val status: String? = "Alive",
@@ -97,7 +132,10 @@ data class UiState(
 
 data class CharacterDetailUiState(
     val character: CharacterEntity? = null,
-    val episodeUrls: List<String> = emptyList()
+    val episodeIds: List<Int> = emptyList(),
+    val episodes: List<Episode> = emptyList(),
+    val isLoadingEpisodes: Boolean = false,
+    val episodeError: String? = null
 )
 
 

@@ -9,6 +9,7 @@ import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
 import com.valentinerutto.rickandmortynative.data.local.RickandMortyDatabase
 import com.valentinerutto.rickandmortynative.data.local.toEntity
 import com.valentinerutto.rickandmortynative.data.network.ApiService
+import com.valentinerutto.rickandmortynative.data.network.models.Episode
 import com.valentinerutto.rickandmortynative.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -53,4 +54,12 @@ private val dao: CharacterDao, private val database: RickandMortyDatabase
     fun observeCharacter(characterId: Int): Flow<CharacterEntity?> {
         return dao.observeCharacter(characterId)
     }
-}
+
+    suspend fun getEpisodes(episodeIds: List<Int>): List<Episode> {
+        return when (episodeIds.size) {
+            0 -> emptyList()
+            1 -> api.getEpisode(episodeIds.first()).body()?.let(::listOf).orEmpty()
+            else -> api.getEpisodes(episodeIds.joinToString(",")).body().orEmpty()
+        }
+    }
+    }
