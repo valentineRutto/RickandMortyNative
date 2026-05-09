@@ -65,6 +65,21 @@ class CharacterViewmodel(  private val characterId: Int,
     fun onSpeciesSelected(species: String?) {
         filters.update { it.copy(species = species) }
     }
+
+
+    fun characterDetailState(characterId: Int): Flow<CharacterDetailUiState> {
+        return repository.observeCharacter(characterId).map { character ->
+            CharacterDetailUiState(
+                character = character,
+                episodeUrls = character?.episodeUrls
+                    ?.split(",")
+                    ?.filter { it.isNotBlank() }
+                    ?.take(3)
+                    .orEmpty()
+            )
+        }
+    }
+
     }
 
 private data class FilterState(
@@ -80,7 +95,10 @@ data class UiState(
 )
 
 
-
+data class CharacterDetailUiState(
+    val character: CharacterEntity? = null,
+    val episodeUrls: List<String> = emptyList()
+)
 
 
 
