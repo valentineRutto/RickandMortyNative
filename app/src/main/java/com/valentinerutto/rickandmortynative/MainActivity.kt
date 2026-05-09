@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.valentinerutto.rickandmortynative.ui.screen.CharacterScreen
 import com.valentinerutto.rickandmortynative.ui.theme.RickandMortyNativeTheme
 import kotlinx.coroutines.coroutineScope
 import org.koin.compose.viewmodel.koinViewModel
@@ -32,8 +33,7 @@ class MainActivity : ComponentActivity() {
                         name = "Android",
                         modifier = Modifier.padding(innerPadding)
                     )
-                    LaunchedEffect(1) {
-                    viewModel.getCharacters()}
+                    CharacterScreen(viewModel)
                 }
             }
         }

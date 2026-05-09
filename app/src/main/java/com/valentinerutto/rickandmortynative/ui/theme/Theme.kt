@@ -9,6 +9,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -32,6 +33,17 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+private val PortalColorScheme = darkColorScheme(
+    primary = PortalGreen,
+    onPrimary = Color(0xFF102000),
+    background = PortalBackground,
+    onBackground = PortalText,
+    surface = PortalSurface,
+    onSurface = PortalText,
+    surfaceVariant = PortalSurfaceHigh,
+    onSurfaceVariant = PortalMuted,
+    outline = PortalBorder
+)
 
 @Composable
 fun RickandMortyNativeTheme(
@@ -51,7 +63,7 @@ fun RickandMortyNativeTheme(
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = PortalColorScheme,
         typography = Typography,
         content = content
     )
