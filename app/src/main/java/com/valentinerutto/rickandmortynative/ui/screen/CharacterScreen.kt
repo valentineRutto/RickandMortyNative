@@ -1,20 +1,28 @@
 package com.valentinerutto.rickandmortynative.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,15 +33,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.valentinerutto.rickandmortynative.CharacterViewmodel
 import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
+import com.valentinerutto.rickandmortynative.ui.theme.PortalBorder
 import com.valentinerutto.rickandmortynative.ui.theme.PortalDanger
 import com.valentinerutto.rickandmortynative.ui.theme.PortalGreen
 import com.valentinerutto.rickandmortynative.ui.theme.PortalMuted
+import com.valentinerutto.rickandmortynative.ui.theme.PortalSurface
+import com.valentinerutto.rickandmortynative.ui.theme.PortalSurfaceHigh
 import com.valentinerutto.rickandmortynative.ui.theme.PortalText
 import retrofit2.HttpException
 
@@ -48,7 +61,7 @@ import retrofit2.HttpException
             items(characters.itemCount) { index ->
                 val character = characters[index]
                 if (character != null) {
-                    CharacterItem(character)
+                    CharacterCard(character)
                 }
             }
 
@@ -80,28 +93,78 @@ import retrofit2.HttpException
         }
     }
 
-    @Composable
-    fun CharacterItem(character: CharacterEntity) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
+@Composable
+private fun CharacterCard(
+    character: CharacterEntity
+) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = PortalSurface),
+        border = BorderStroke(1.dp, PortalBorder),
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Box {
             AsyncImage(
                 model = character.image,
                 contentDescription = character.name,
-                modifier = Modifier.size(72.dp)
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1.28f)
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .background(PortalSurfaceHigh)
             )
+            StatusBadge(
+                status = character.status,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
+            )
+        }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column {
-                Text(text = character.name)
-                Text(text = "${character.species} - ${character.status}")
-                Text(text = character.location)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp, top = 10.dp, end = 8.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = character.name,
+                    color = PortalText,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Species: ${character.species}",
+                    color = PortalText,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Public,
+                        contentDescription = null,
+                        tint = PortalMuted,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = "  ${character.location}",
+                        color = PortalMuted,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
+
         }
     }
+}
+
+
 @Composable
 private fun TopBar() {
     Row(
@@ -165,7 +228,61 @@ private fun StatusBadge(status: String, modifier: Modifier = Modifier) {
         )
     }
 }
-
+@Composable
+private fun FilterRow(
+    label: String,
+    options: List<String>,
+    selected: String?,
+    onSelected: (String?) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = label,
+            color = PortalGreen,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.weight(0.72f)
+        )
+        options.forEach { option -> FilterChip(
+                text = option,
+                selected = selected.equals(option, ignoreCase = true),
+                onClick = {
+                    onSelected(if (selected.equals(option, ignoreCase = true)) null else option)
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+@Composable
+private fun FilterChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AssistChip(
+        onClick = onClick,
+        label = {
+            Text(
+                text = text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelSmall
+            )
+        },
+        border = BorderStroke(1.dp, if (selected) PortalGreen else PortalBorder),
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = if (selected) PortalGreen else Color.Transparent,
+            labelColor = if (selected) Color(0xFF152100) else PortalText
+        ),
+        shape = RoundedCornerShape(50),
+        modifier = modifier.height(32.dp)
+    )
+}
 @Composable
 private fun EmptyState(message: String, modifier: Modifier = Modifier) {
     Text(
@@ -185,6 +302,6 @@ private fun LoadState.errorMessage(): String? {
             "The portal API returned ${throwable.code()}."
         }
 
-        else -> "Could not reach the portal network. Showing cached data."
+        else -> "Could not reach the portal network. Showing cached data."}}
 
 
