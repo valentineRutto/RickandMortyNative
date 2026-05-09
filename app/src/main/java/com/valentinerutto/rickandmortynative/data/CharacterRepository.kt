@@ -17,20 +17,6 @@ import kotlinx.coroutines.flow.flow
 class CharacterRepository  (  private val api: ApiService,
 private val dao: CharacterDao, private val database: RickandMortyDatabase
 ) {
-    suspend fun getCharacters(): Resource<List<CharacterEntity>> {
-        val response = api.getCharacters(
-            page = 1
-        )
-
-        return (if (response.isSuccessful && response.body() != null){
-            val characters = response.body()!!.results.map { it.toEntity() }
-            dao.upsertCharacters(characters)
-            Resource.Success(response.body()!!.results.map { it.toEntity() })
-        }else{
-            Resource.Error(response.message())
-        })
-
-    }
 
     @OptIn(ExperimentalPagingApi::class)
    suspend fun getPagedCharacters(
