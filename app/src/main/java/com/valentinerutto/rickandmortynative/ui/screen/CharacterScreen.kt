@@ -262,14 +262,7 @@ private fun TopBar() {
             .padding(top = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = {}, modifier = Modifier.size(34.dp)) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = PortalGreen,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+
         Text(
             text = "Portal Explorer",
             color = PortalGreen,
@@ -278,14 +271,7 @@ private fun TopBar() {
                 .weight(1f)
                 .padding(start = 4.dp)
         )
-        IconButton(onClick = {}, modifier = Modifier.size(34.dp)) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = PortalText,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+
     }
 }
 @Composable
