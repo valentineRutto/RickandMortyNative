@@ -13,5 +13,6 @@ interface CharacterDao {
 
     @Query("SELECT * FROM characters ORDER BY id ASC")
     fun pagingSource(): PagingSource<Int, CharacterEntity>
-
+    @Query("DELETE FROM characters")
+    suspend fun clearAll()
 }
