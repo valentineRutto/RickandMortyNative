@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -78,7 +80,9 @@ import retrofit2.HttpException
         onQueryChange = viewModel::onQueryChange,
         onStatusSelected = viewModel::onStatusSelected,
         onSpeciesSelected = viewModel::onSpeciesSelected,
-              onItemClick = { character -> onCharacterClick(character.id) }
+              onItemClick = { character -> onCharacterClick(character.id) },
+                  onRetryClick = characters::retry
+
     )
 
     }
@@ -89,7 +93,8 @@ private fun CharacterContent(
     onQueryChange: (String) -> Unit,
     onStatusSelected: (String?) -> Unit,
     onSpeciesSelected: (String?) -> Unit,
-    onItemClick: (CharacterEntity) -> Unit
+    onItemClick: (CharacterEntity) -> Unit,
+    onRetryClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -158,7 +163,18 @@ private fun CharacterContent(
                         }
                     }
                 }
-            }
+
+            val appendState = characters.loadState.append
+            if (appendState is LoadState.Error) {
+                item(key = "next-page-error") {
+                    RetryPanel(
+                        message = appendState.errorMessage()
+                            ?: "Could not load the next page.",
+                        onRetryClick = onRetryClick,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }}
 
             if (characters.loadState.refresh is LoadState.Loading) {
                 CircularProgressIndicator(
@@ -179,6 +195,34 @@ private fun CharacterContent(
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
             }
+        }
+    }
+}
+@Composable
+private fun RetryPanel(
+    message: String,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+    ) {
+        Text(
+            text = message,
+            color = PortalMuted,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(
+            onClick = onRetryClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PortalGreen,
+                contentColor = Color(0xFF152100)
+            ),
+            shape = RoundedCornerShape(6.dp)
+        ) {
+            Text(text = "Retry")
         }
     }
 }

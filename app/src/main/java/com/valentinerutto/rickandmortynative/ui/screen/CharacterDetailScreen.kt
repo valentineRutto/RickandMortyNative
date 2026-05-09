@@ -172,27 +172,6 @@ private fun CharacterDetailContent(
             episodeError = episodeError
         )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(18.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 34.dp)
-        ) {
-            MetricCard(
-                icon = Icons.Default.Science,
-                label = "THREAT LEVEL",
-                value = if (character.status.equals("Alive", true)) "Omega" else "Archived",
-                valueColor = if (character.status.equals("Alive", true)) Color(0xFFFFB5AE) else PortalMuted,
-                modifier = Modifier.weight(1f)
-            )
-            MetricCard(
-                icon = Icons.Default.Memory,
-                label = "IQ SCORE",
-                value = "300+",
-                valueColor = Color(0xFFD7F8FF),
-                modifier = Modifier.weight(1f)
-            )
-        }
     }
 }
 
@@ -250,20 +229,7 @@ private fun DossierCard(character: CharacterEntity, modifier: Modifier = Modifie
                         SmallBadge("C-${character.id}")
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .size(58.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(PortalSurfaceHigh)
-                        .border(1.dp, PortalBorder, RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Science,
-                        contentDescription = null,
-                        tint = PortalGreen
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -356,12 +322,13 @@ private fun EpisodeSection(
     when {
         episodeIds.isEmpty() -> {
             Text(
-                text = "No episode logs cached for this subject.",
+                text = "No episode for this subject.",
                 color = PortalMuted,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
             )
         }
+
 
         isLoadingEpisodes -> {
             Box(
