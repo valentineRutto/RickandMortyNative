@@ -85,7 +85,8 @@ class CharacterRemoteMediator(
                     CharacterRemoteKey(
                         characterId = it.id,
                         prevKey = prevKey,
-                        nextKey = nextKey,                        filterKey = filterKey
+                        nextKey = nextKey,
+                        filterKey = filterKey
 
                         )
                 }
