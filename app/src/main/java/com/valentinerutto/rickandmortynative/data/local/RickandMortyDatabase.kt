@@ -14,6 +14,8 @@ import androidx.room.RoomDatabase
 abstract class RickandMortyDatabase : RoomDatabase() {
 
     abstract fun characterDao(): CharacterDao
+    abstract fun remoteKeyDao(): CharacterRemoteKeyDao
+
     companion object Companion {
         @Volatile
         private var INSTANCE: RickandMortyDatabase? = null

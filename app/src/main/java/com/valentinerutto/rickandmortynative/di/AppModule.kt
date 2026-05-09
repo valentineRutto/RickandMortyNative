@@ -16,6 +16,8 @@ import retrofit2.Retrofit
 val appModule = module {
     single { MyApplication.INSTANCE }
     single { Gson() }
+
+
     single { RickandMortyDatabase.getDatabase(context = androidContext()) }
 
     single {
@@ -43,5 +45,6 @@ val networkingModule = module {
 
 val databaseModule = module {
     single { get<RickandMortyDatabase>().characterDao() }
+    single { get<RickandMortyDatabase>().remoteKeyDao() }
 
 }
