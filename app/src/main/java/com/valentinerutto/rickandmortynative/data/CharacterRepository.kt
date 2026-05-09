@@ -58,8 +58,17 @@ private val dao: CharacterDao, private val database: RickandMortyDatabase
     suspend fun getEpisodes(episodeIds: List<Int>): List<Episode> {
         return when (episodeIds.size) {
             0 -> emptyList()
-            1 -> api.getEpisode(episodeIds.first()).body()?.let(::listOf).orEmpty()
-            else -> api.getEpisodes(episodeIds.joinToString(",")).body().orEmpty()
+            1 -> api.getEpisode(episodeIds.first())
+                .takeIf { it.isSuccessful }
+                ?.body()
+                ?.let(::listOf)
+                .orEmpty()
+
+            else -> api.getEpisodes(episodeIds.joinToString(","))
+                .takeIf { it.isSuccessful }
+                ?.body()
+                ?.sortedBy { episode -> episodeIds.indexOf(episode.id) }
+                .orEmpty()
         }
     }
     }

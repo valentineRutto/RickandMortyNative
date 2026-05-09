@@ -1,5 +1,6 @@
 package com.valentinerutto.rickandmortynative.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -71,6 +72,7 @@ fun CharacterDetailScreen(
     val state by detailFlow.collectAsStateWithLifecycle(
         initialValue = CharacterDetailUiState()
     )
+    BackHandler(onBack = onBackClick)
 
     CharacterDetailContent(
         character = state.character,

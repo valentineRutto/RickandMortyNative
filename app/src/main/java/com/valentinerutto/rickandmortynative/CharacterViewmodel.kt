@@ -110,13 +110,23 @@ class CharacterViewmodel(
     }
 
 
-private fun CharacterEntity?.firstEpisodeIds(): List<Int> {
-    return this?.episodeUrls
-        ?.split(",")
-        ?.mapNotNull { it.substringAfterLast('/').toIntOrNull() }
-        ?.take(3)
-        .orEmpty()
-}}
+    private fun CharacterEntity?.firstEpisodeIds(): List<Int> {
+        return this?.episodeUrls
+            ?.split(",")
+            ?.mapNotNull { it.extractEpisodeId() }
+            ?.take(3)
+            .orEmpty()
+    }
+
+    private fun String.extractEpisodeId(): Int? {
+        return Regex("""(\d+)\D*$""")
+            .find(trim())
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.toIntOrNull()
+    }
+
+}
 private data class FilterState(
     val query: String = "",
     val status: String? = "Alive",
