@@ -1,5 +1,15 @@
-# Architecture
 
+## 📹 Video Demo
+
+> **Screen Recording — Portal Explorer walkthrough**
+
+[▶ Watch Demo Video](file:///Users/valentinerutto/Desktop/Screen_recording_20260509_172723.webm)
+
+> _To play locally: download the file and open it in a browser (Chrome/Firefox) or a media player that supports `.webm` format._
+
+---
+
+## 🏗️ Architecture
 The app follows an MVVM architecture with a repository-driven data layer and Paging 3 for incremental loading and offline cache support.
 
 ```text
