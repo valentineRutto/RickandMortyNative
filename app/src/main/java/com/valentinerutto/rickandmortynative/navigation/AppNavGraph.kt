@@ -14,13 +14,13 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+    val viewModel: CharacterViewmodel = koinViewModel()
 
     NavHost(
         navController = navController,
         startDestination = CharacterRoutes.List
     ) {
         composable(CharacterRoutes.List) {
-            val viewModel: CharacterViewmodel = koinViewModel()
             CharacterScreen(
                 viewModel = viewModel,
                 onCharacterClick = { characterId ->
@@ -34,12 +34,9 @@ fun AppNavGraph() {
             arguments = listOf(navArgument(CharacterRoutes.CharacterIdArg) { type = NavType.IntType })
         ) { backStackEntry ->
             val characterId = backStackEntry.arguments?.getInt(CharacterRoutes.CharacterIdArg) ?: return@composable
-
-            val viewModel: CharacterDetailViewModel = koinViewModel(
-                parameters = { parametersOf(characterId) }
-            )
             CharacterDetailScreen(
                 viewModel = viewModel,
+                characterId = characterId,
                 onBackClick = navController::popBackStack
             )
         }

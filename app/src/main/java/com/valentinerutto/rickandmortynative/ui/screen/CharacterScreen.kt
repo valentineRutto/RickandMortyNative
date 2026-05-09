@@ -64,8 +64,9 @@ import retrofit2.HttpException
 
 @Composable
     fun CharacterScreen(
-        viewModel: CharacterViewmodel
-    ) {
+        viewModel: CharacterViewmodel,        onCharacterClick: (Int) -> Unit
+
+) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
