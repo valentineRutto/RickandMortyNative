@@ -85,6 +85,11 @@ android {
         implementation(libs.koin.androidx.compose)
         implementation(libs.androidx.room.runtime)
         implementation(libs.preference)
+implementation(libs.androidx.paging)
+        implementation(libs.androidx.paging.runtime)
+        implementation(libs.androidx.room.paging)
+
+
 
 
         // Retrofit dependencies
