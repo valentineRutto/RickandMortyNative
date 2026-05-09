@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 
 @Database(
-    entities = [CharacterEntity::class],
+    entities = [CharacterEntity::class,CharacterRemoteKey::class],
     version = 1,
     exportSchema = false
 )
