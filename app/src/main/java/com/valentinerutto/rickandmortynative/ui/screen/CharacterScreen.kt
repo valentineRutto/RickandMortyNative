@@ -64,7 +64,8 @@ import retrofit2.HttpException
 
 @Composable
     fun CharacterScreen(
-        viewModel: CharacterViewmodel,        onCharacterClick: (Int) -> Unit
+        viewModel: CharacterViewmodel,
+        onCharacterClick: (Int) -> Unit
 
 ) {
         val characters = viewModel.characters.collectAsLazyPagingItems()
@@ -77,7 +78,7 @@ import retrofit2.HttpException
         onQueryChange = viewModel::onQueryChange,
         onStatusSelected = viewModel::onStatusSelected,
         onSpeciesSelected = viewModel::onSpeciesSelected,
-        onItemClick = {}
+              onItemClick = { character -> onCharacterClick(character.id) }
     )
 
     }
