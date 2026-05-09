@@ -33,7 +33,8 @@ private val dao: CharacterDao, private val database: RickandMortyDatabase
     }
 
     @OptIn(ExperimentalPagingApi::class)
-   suspend fun getPagedCharacters(      query: String?=null,
+   suspend fun getPagedCharacters(
+        query: String?=null,
                                  status: String?=null,
                                  species: String?=null): Flow<PagingData<CharacterEntity>>{
 

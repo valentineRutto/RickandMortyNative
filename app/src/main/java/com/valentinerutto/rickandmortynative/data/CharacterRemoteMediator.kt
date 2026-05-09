@@ -64,7 +64,6 @@ class CharacterRemoteMediator(
                 val keys = characters?.map {
                     CharacterRemoteKey(
                         characterId = it.id,
-                       // filterKey = filterKey,
                         prevKey = prevKey,
                         nextKey = nextKey
                     )
@@ -84,7 +83,6 @@ class CharacterRemoteMediator(
     }
 
     private companion object {
-        const val FIRST_PAGE = 1
 
         fun buildFilterKey(query: String, status: String?, species: String?): String {
             return listOf(
