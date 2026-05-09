@@ -23,6 +23,8 @@ preference = "1.2.1"
 navigationCompose = "2.9.7"
 coreKtxVersion = "1.18.0"
 
+paging = "3.3.2"
+
 [libraries]
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-material-icons= { module = "androidx.compose.material:material-icons-extended" }
@@ -44,6 +46,10 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", name="room-compiler", version.ref = "room" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", name="room-runtime", version.ref = "room" }
+androidx-room-paging = {module = "androidx.room:room-paging", name="room-paging", version.ref = "room"}
+
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging"}
+androidx-paging = {module = "androidx.paging:paging-compose", version.ref = "paging"}
 
 android-appcompat = {module = "androidx.appcompat:appcompat", version.ref = "android-appcompat"}
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
