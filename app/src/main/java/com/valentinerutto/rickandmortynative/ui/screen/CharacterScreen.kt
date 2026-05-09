@@ -35,6 +35,7 @@ import com.valentinerutto.rickandmortynative.ui.theme.PortalDanger
 import com.valentinerutto.rickandmortynative.ui.theme.PortalGreen
 import com.valentinerutto.rickandmortynative.ui.theme.PortalMuted
 import com.valentinerutto.rickandmortynative.ui.theme.PortalText
+import retrofit2.HttpException
 
 
 @Composable
@@ -164,4 +165,26 @@ private fun StatusBadge(status: String, modifier: Modifier = Modifier) {
         )
     }
 }
+
+@Composable
+private fun EmptyState(message: String, modifier: Modifier = Modifier) {
+    Text(
+        text = message,
+        color = PortalMuted,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = modifier.padding(top = 24.dp)
+    )
+}
+
+private fun LoadState.errorMessage(): String? {
+    val throwable = (this as? LoadState.Error)?.error ?: return null
+    return when (throwable) {
+        is HttpException -> if (throwable.code() == 404) {
+            "No characters found in this dimension."
+        } else {
+            "The portal API returned ${throwable.code()}."
+        }
+
+        else -> "Could not reach the portal network. Showing cached data."
+
 
