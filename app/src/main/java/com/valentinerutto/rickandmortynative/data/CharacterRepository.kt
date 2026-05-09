@@ -1,13 +1,19 @@
 package com.valentinerutto.rickandmortynative.data
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.valentinerutto.rickandmortynative.data.local.CharacterDao
 import com.valentinerutto.rickandmortynative.data.local.CharacterEntity
+import com.valentinerutto.rickandmortynative.data.local.RickandMortyDatabase
 import com.valentinerutto.rickandmortynative.data.local.toEntity
 import com.valentinerutto.rickandmortynative.data.network.ApiService
 import com.valentinerutto.rickandmortynative.util.Resource
+import kotlinx.coroutines.flow.Flow
 
 class CharacterRepository  (  private val api: ApiService,
-private val dao: CharacterDao
+private val dao: CharacterDao, private val database: RickandMortyDatabase
 ) {
     suspend fun getCharacters(): Resource<List<CharacterEntity>> {
         val response = api.getCharacters(
@@ -22,7 +28,17 @@ private val dao: CharacterDao
             Resource.Error(response.message())
         })
 
+    }
 
+    @OptIn(ExperimentalPagingApi::class)
+    fun getPagedCharacters(): Flow<PagingData<CharacterEntity>>{
+        return Pager(
+            config = PagingConfig(pageSize = 20, enablePlaceholders = false),
+            remoteMediator = CharacterRemoteMediator(api,database),
+
+            pagingSourceFactory = {database.characterDao().pagingSource()}
+
+        ).flow
     }
 
 }

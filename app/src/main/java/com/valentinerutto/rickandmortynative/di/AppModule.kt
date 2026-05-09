@@ -23,7 +23,7 @@ val appModule = module {
     single {
         CharacterRepository(
             api = get(),
-            dao = get()
+            dao = get(), database = get()
         )
     }
 

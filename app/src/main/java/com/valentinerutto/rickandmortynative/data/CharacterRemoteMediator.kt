@@ -64,7 +64,7 @@ class CharacterRemoteMediator(private val api: ApiService, private val database:
                 if (keys != null) {
                     remoteKeyDao.insertAll(keys)
                 }
-if (!characters.isNullOrEmpty()){
+          if (!characters.isNullOrEmpty()){
                 characterDao.upsertCharacters(characters.map { it.toEntity() })}
             }
 
