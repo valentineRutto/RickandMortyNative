@@ -24,6 +24,8 @@ class CharacterRemoteMediator(
   private  val remoteKeyDao = database.remoteKeyDao()
 
     private val filterKey = buildFilterKey(query, status, species)
+    private val isUnfiltered = query.isBlank() && status.isNullOrBlank() && species.isNullOrBlank()
+
 
     override suspend fun load(
         loadType: LoadType,
@@ -36,26 +38,44 @@ class CharacterRemoteMediator(
 
                 LoadType.PREPEND -> {
                     val firstItem = state.firstItemOrNull()
-                    val key = firstItem?.let { remoteKeyDao.getRemoteKey(it.id) }
+                    val key = firstItem?.let { remoteKeyDao.getRemoteKey(it.id,filterKey) }
                     key?.prevKey ?: return MediatorResult.Success(endOfPaginationReached = true)
                 }
 
                 LoadType.APPEND -> {
                     val lastItem = state.lastItemOrNull()
-                    val key = lastItem?.let { remoteKeyDao.getRemoteKey(it.id) }
+                    val key = lastItem?.let { remoteKeyDao.getRemoteKey(it.id,filterKey) }
                     key?.nextKey ?: return MediatorResult.Success(endOfPaginationReached = true)
                 }
             }
 
-            val response = api.getCharacters(page, name=query.takeIf { it.isNotBlank() },status=status, species=species).body()
-            val characters = response?.results
-            val endReached = response?.info?.next == null
+            val response = api.getCharacters(
+                page = page,
+                name = query.takeIf { it.isNotBlank() },
+                status = status,
+                species = species
+            )
+            if (!response.isSuccessful) {
+                return if (response.code() == 404) {
+                    MediatorResult.Success(endOfPaginationReached = true)
+                } else {
+                    MediatorResult.Error(IllegalStateException(response.message()))
+                }
+            }
+
+            val body =response.body()
+            val characters = body?.results
+            val endReached = body?.info?.next == null
 
             database.withTransaction {
 
                 if (loadType == LoadType.REFRESH) {
-                    characterDao.clearAll()
-                    remoteKeyDao.clearAll()
+                    if (isUnfiltered) {
+                        characterDao.clearAll()
+                        remoteKeyDao.clearAll()
+                    } else {
+                        remoteKeyDao.clearByFilter(filterKey)
+                    }
                 }
 
                 val prevKey = if (page == 1) null else page - 1
@@ -65,8 +85,9 @@ class CharacterRemoteMediator(
                     CharacterRemoteKey(
                         characterId = it.id,
                         prevKey = prevKey,
-                        nextKey = nextKey
-                    )
+                        nextKey = nextKey,                        filterKey = filterKey
+
+                        )
                 }
                 if (keys != null) {
                     remoteKeyDao.insertAll(keys)
