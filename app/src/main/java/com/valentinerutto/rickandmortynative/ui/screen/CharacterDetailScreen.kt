@@ -30,10 +30,12 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -93,117 +95,122 @@ private fun CharacterDetailContent(
     episodeError: String?,
     onBackClick: () -> Unit
 ) {
+
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(PortalBackground)
-            .verticalScroll(rememberScrollState())
     ) {
         DetailTopBar(onBackClick = onBackClick)
 
-        if (character == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = PortalGreen)
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+        ) {
+            if (character == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PortalGreen)
+                }
+                return@Column
             }
-            return@Column
-        }
 
-        Box {
-            AsyncImage(
-                model = character.image,
-                contentDescription = character.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(0.92f)
-            )
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                PortalBackground.copy(alpha = 0.25f),
-                                PortalBackground
+            Box {
+                AsyncImage(
+                    model = character.image,
+                    contentDescription = character.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.92f)
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    PortalBackground.copy(alpha = 0.25f),
+                                    PortalBackground
+                                )
                             )
                         )
-                    )
+                )
+            }
+
+            DossierCard(
+                character = character,
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 18.dp)
             )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, top = 34.dp, end = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "First 3 Appearances",
+                    color = PortalGreen,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "VIEW LOG",
+                    color = PortalText,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            EpisodeSection(
+                episodeIds = episodeIds,
+                episodes = episodes,
+                isLoadingEpisodes = isLoadingEpisodes,
+                episodeError = episodeError
+            )
+
         }
-
-        DossierCard(
-            character = character,
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(top = 18.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, top = 34.dp, end = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "First 3 Appearances",
-                color = PortalGreen,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "VIEW LOG",
-                color = PortalText,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        EpisodeSection(
-            episodeIds = episodeIds,
-            episodes = episodes,
-            isLoadingEpisodes = isLoadingEpisodes,
-            episodeError = episodeError
-        )
-
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DetailTopBar(onBackClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(76.dp)
-            .background(Color(0xFF09131E))
-            .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = PortalGreen
-            )
-        }
-        Text(
+    TopAppBar(
+        title = {   Text(
             text = "SUBJECT DOSSIER",
             color = PortalGreen,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = PortalGreen
+                )
+            }
+        }
 
-    }
+
+    )
 }
 
 @Composable
